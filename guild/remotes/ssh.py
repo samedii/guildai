@@ -44,6 +44,7 @@ class SSHRemote(remotelib.Remote):
     def __init__(self, name, config):
         self.name = name
         self._host = config["host"]
+        self._port = config.get("port", None)
         self.user = config.get("user")
         self.private_key = config.get("private-key")
         self.guild_home = self._init_guild_home(config)
@@ -53,6 +54,10 @@ class SSHRemote(remotelib.Remote):
     @property
     def host(self):
         return self._host
+
+    @property
+    def port(self):
+        return self._port
 
     @staticmethod
     def _init_guild_home(config):
@@ -187,7 +192,7 @@ class SSHRemote(remotelib.Remote):
 
     def _ssh_cmd(self, cmd):
         ssh_util.ssh_cmd(
-            self.host, [cmd], self.user,
+            self.host, [cmd], self.user, self.port,
             remote_util.config_path(self.private_key))
 
     def _init_remote_new_run_dir(self, opspec):
@@ -212,7 +217,7 @@ class SSHRemote(remotelib.Remote):
         host_dest = "{}/.guild/job-packages/".format(remote_run_dir)
         log.info("Copying package")
         ssh_util.rsync_copy_to(
-            src, self.host, host_dest, self.user,
+            src, self.host, host_dest, self.user, self.port,
             remote_util.config_path(self.private_key))
 
     def _install_job_package(self, remote_run_dir):
